@@ -6,8 +6,10 @@ import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.*
+import kotlin.collections.ArrayList
 
-suspend fun readAll(context: Context){
+suspend fun readAll(context: Context): ArrayList<String> {
+    val messages = arrayListOf<String>()
     withContext(Dispatchers.IO) {
         val projection = arrayOf(
             Telephony.TextBasedSmsColumns.READ,
@@ -38,17 +40,19 @@ suspend fun readAll(context: Context){
                     while (moveToNext()) {
 //                    val read = getString(readIndex)
                         val body = getString(bodyIndex)
-                        val address = getString(addressIndex)
+//                        val address = getString(addressIndex)
                         if (body.lowercase(Locale.ROOT).contains("umepokea")) {
-                            Log.e("ROW SMS", "address: $address, body: $body")
+//                            Log.e("ROW SMS", "address: $address, body: $body")
+                            messages.add(body)
                         }
                     }
                 }
             }
         }
     }
+    return messages
 }
 
-fun readNewInbox(){
+fun sendSmsToFahamuPay(){
 
 }

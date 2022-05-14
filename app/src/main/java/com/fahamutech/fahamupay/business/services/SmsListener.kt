@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import com.fahamutech.fahamupay.business.workers.startSendMessagesWorker
 import kotlinx.coroutines.*
 
 /**
@@ -23,11 +24,7 @@ fun BroadcastReceiver.goAsync(
 
 class SmsListener: BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
-//        Log.e("TAG****","RECEIVE SIGNAL")
-//        if (intent?.action.equals("android.provider.Telephony.SMS_RECEIVED")) {
-                goAsync(MainScope(), Dispatchers.IO){
-                    readAll(context!!)
-                }
-//        }
+        Log.e("TAG****","RECEIVE SIGNAL")
+        if(context!=null)startSendMessagesWorker(context)
     }
 }

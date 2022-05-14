@@ -10,36 +10,97 @@ import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
+import androidx.work.await
+import com.fahamutech.fahamupay.business.components.CredentialForm
 import com.fahamutech.fahamupay.business.services.readAll
 import com.fahamutech.fahamupay.business.ui.theme.FahamupaybusinessTheme
+import com.fahamutech.fahamupay.business.workers.startPeriodicSendMessagesWorker
+import com.fahamutech.fahamupay.business.workers.startSendMessagesWorker
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        startPeriodicSendMessagesWorker(this)
         setContent {
             FahamupaybusinessTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    Greeting("Android")
+                    Home()
                 }
             }
         }
+    }
+}
+
+@Composable
+fun Home() {
+    val context = LocalContext.current
+    val cScope = rememberCoroutineScope()
+    val workInfo = WorkManager.getInstance(context)
+        .getWorkInfosForUniqueWorkLiveData("sync_messages_to_fahamupay")
+        .observeAsState()
+    val launcher = askPermission(
+        onGrant = {
+            cScope.launch {
+                readAll(context)
+            }
+        },
+        onDenied = {}
+    )
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Button(onClick = {
+            checkPermissionForReadSMS(context, launcher) {
+                cScope.launch {
+                    startSendMessagesWorker(context)
+                }
+            }
+            checkPermissionForReceiveSMS(context, launcher) {}
+        }) {
+            Text(text = "Sync messages now.")
+        }
+        Text(
+            text = "STATUS : ${workInfo.value?.get(0)?.state}",
+            modifier = Modifier.padding(8.dp, 8.dp)
+        )
+        CredentialForm()
+    }
+    LaunchedEffect("app") {
+        checkPermissionForReadSMS(context, launcher) {
+            cScope.launch {
+                startSendMessagesWorker(context)
+            }
+        }
+        checkPermissionForReceiveSMS(context, launcher) {}
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DefaultPreview() {
+    FahamupaybusinessTheme {
+        Home()
     }
 }
 
@@ -97,56 +158,5 @@ fun checkPermissionForReceiveSMS(
         else -> {
             launcher.launch(Manifest.permission.RECEIVE_SMS)
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String) {
-    val cScope = rememberCoroutineScope()
-    val context = LocalContext.current
-    val launcher = askPermission(
-        onGrant = {
-            cScope.launch {
-                readAll(context)
-            }
-        },
-        onDenied = {}
-    )
-    Column {
-//        Text(text = "Hello $name!")
-        Button(onClick = {
-            checkPermissionForReadSMS(context, launcher) {
-                cScope.launch {
-                    readAll(context)
-                }
-            }
-            checkPermissionForReceiveSMS(context, launcher) {
-//                cScope.launch {
-//                    readAll(context)
-//                }
-            }
-        }) {
-            Text(text = "Hit me")
-        }
-    }
-    LaunchedEffect("app") {
-        checkPermissionForReadSMS(context, launcher) {
-            cScope.launch {
-                readAll(context)
-            }
-        }
-        checkPermissionForReceiveSMS(context, launcher) {
-//            cScope.launch {
-//                readAll(context)
-//            }
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    FahamupaybusinessTheme {
-        Greeting("Android")
     }
 }
