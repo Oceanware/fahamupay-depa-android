@@ -2,6 +2,7 @@ package com.fahamutech.fahamupay.business.workers
 
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.work.*
 import com.fahamutech.fahamupay.business.models.SendMessageRequest
 import com.fahamutech.fahamupay.business.services.getSecretCode
@@ -18,7 +19,7 @@ class SyncPaymentMessages(
 ) : CoroutineWorker(appContext, params) {
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         return@withContext try {
-            if (runAttemptCount > 20) {
+            if (runAttemptCount > 5) {
                 return@withContext Result.failure()
             }
             val messages = readAll(applicationContext)
@@ -26,11 +27,15 @@ class SyncPaymentMessages(
             val secret = getSecretCode(applicationContext)
             if (code !== null && secret !== null) {
                 val r = makeMessageSyncRequest(SendMessageRequest(messages), code, secret)
-                Log.e("SERVER RESP", r.size.toString())
+//                if (r===null)Result.failure()
+//                else{
+                    Log.e("SERVER RESP", r.size.toString())
+                    Result.success()
+//                }
             } else {
                 Log.e("*** REQUEST ERR", "no code nor secret")
+                Result.failure()
             }
-            Result.success()
         } catch (e: Throwable) {
             Log.e("SYNCS MESSAGES FAIL", e.toString())
             Result.retry()

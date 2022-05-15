@@ -11,6 +11,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -68,7 +70,9 @@ fun Home() {
     )
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .verticalScroll(rememberScrollState())
     ) {
         Button(onClick = {
             checkPermissionForReadSMS(context, launcher) {
@@ -80,8 +84,10 @@ fun Home() {
         }) {
             Text(text = "Sync messages now.")
         }
+        val st: String? = if (workInfo.value?.isEmpty() == true) "PENDING"
+        else workInfo.value?.get(0)?.state?.name
         Text(
-            text = "STATUS : ${workInfo.value?.get(0)?.state}",
+            text = "STATUS : $st",
             modifier = Modifier.padding(8.dp, 8.dp)
         )
         CredentialForm()

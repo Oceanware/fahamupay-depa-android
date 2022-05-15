@@ -41,8 +41,16 @@ private fun getRetrofit(code: String, secret: String): Retrofit {
         .build()
 }
 
-suspend fun makeMessageSyncRequest(body: SendMessageRequest, code: String, secret: String): Array<Message> {
+suspend fun makeMessageSyncRequest(
+    body: SendMessageRequest,
+    code: String,
+    secret: String
+): Array<Message> {
     val retrofit = getRetrofit(code, secret)
     val service = retrofit.create(FahamupayService::class.java)
+//    return try{
     return service.sendMessages(body, code).await()
+//    }catch (e: Throwable){
+//        null
+//    }
 }
