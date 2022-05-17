@@ -5,10 +5,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.work.*
 import com.fahamutech.fahamupay.business.models.SendMessageRequest
-import com.fahamutech.fahamupay.business.services.getSecretCode
-import com.fahamutech.fahamupay.business.services.getServiceCode
-import com.fahamutech.fahamupay.business.services.makeMessageSyncRequest
-import com.fahamutech.fahamupay.business.services.readAll
+import com.fahamutech.fahamupay.business.services.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
@@ -22,10 +19,11 @@ class SyncPaymentMessages(
             if (runAttemptCount > 5) {
                 return@withContext Result.failure()
             }
-            val messages = readAll(applicationContext)
             val code = getServiceCode(applicationContext)
             val secret = getSecretCode(applicationContext)
             if (code !== null && secret !== null) {
+                val hashes = getRemoteMessagesHashes(code, secret)
+                val messages = readAll(applicationContext, hashes)
                 val r = makeMessageSyncRequest(SendMessageRequest(messages), code, secret)
 //                if (r===null)Result.failure()
 //                else{

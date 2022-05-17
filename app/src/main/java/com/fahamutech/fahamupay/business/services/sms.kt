@@ -6,10 +6,11 @@ import android.util.Log
 import android.widget.Toast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.security.MessageDigest
 import java.util.*
 import kotlin.collections.ArrayList
 
-suspend fun readAll(context: Context): ArrayList<String> {
+suspend fun readAll(context: Context, remoteHashes: Array<String>): ArrayList<String> {
     val messages = arrayListOf<String>()
     withContext(Dispatchers.IO) {
         try{
@@ -35,15 +36,12 @@ suspend fun readAll(context: Context): ArrayList<String> {
                 }
                 else -> {
                     cursor.apply {
-//                val readIndex: Int = getColumnIndex(Telephony.TextBasedSmsColumns.READ)
                         val bodyIndex: Int = getColumnIndex(Telephony.TextBasedSmsColumns.BODY)
-                        val addressIndex: Int = getColumnIndex(Telephony.TextBasedSmsColumns.ADDRESS)
-//                val threadIndex: Int = getColumnIndex(Telephony.TextBasedSmsColumns.THREAD_ID)
                         while (moveToNext()) {
-//                    val read = getString(readIndex)
                             val body = getString(bodyIndex)
-//                        val address = getString(addressIndex)
-                            if (body.lowercase(Locale.ROOT).contains("umepokea")) {
+                            val isNew = remoteHashes.toList().contains(sha1(body)).not()
+                                .and(body.lowercase(Locale.ROOT).contains("umepokea"))
+                            if (isNew) {
 //                            Log.e("ROW SMS", "address: $address, body: $body")
                                 messages.add(body)
                             }
@@ -59,6 +57,12 @@ suspend fun readAll(context: Context): ArrayList<String> {
     return messages
 }
 
-fun sendSmsToFahamuPay(){
-
+fun sha1(data: String): String {
+    val digest = MessageDigest.getInstance("SHA-1")
+    val hashInByte = digest.digest(data.toByteArray())
+    val sb = StringBuilder()
+    for (b in hashInByte) {
+        sb.append(String.format("%02x", b))
+    }
+    return sb.toString()
 }

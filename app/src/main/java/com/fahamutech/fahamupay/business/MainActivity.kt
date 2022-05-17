@@ -63,7 +63,9 @@ fun Home() {
     val launcher = askPermission(
         onGrant = {
             cScope.launch {
-                readAll(context)
+                cScope.launch {
+                    startSendMessagesWorker(context)
+                }
             }
         },
         onDenied = {}

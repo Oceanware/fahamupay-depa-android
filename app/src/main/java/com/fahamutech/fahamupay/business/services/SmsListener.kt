@@ -24,7 +24,7 @@ fun BroadcastReceiver.goAsync(
 
 class SmsListener: BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
-        Log.e("TAG****","RECEIVE SIGNAL")
+        Log.e("SMS RECEIVE SIG","****")
         if(context!=null)startSendMessagesWorker(context)
     }
 }
