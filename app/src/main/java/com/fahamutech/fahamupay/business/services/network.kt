@@ -15,10 +15,11 @@ import java.util.concurrent.TimeUnit
 
 
 interface FahamupayService {
-    @POST("depa/{code}/mobile/validate")
+//    @POST("depa/{code}/mobile/validate")
+    @POST("ukumbi_admin/redirected_sms_receiver")
     fun sendMessages(
         @Body body: SendMessageRequest,
-        @Path("code") code: String
+//        @Path("code") code: String
     ): Call<Array<Message>>
 }
 
@@ -35,7 +36,8 @@ private fun getRetrofit(code: String, secret: String): Retrofit {
     httpClient.readTimeout(5, TimeUnit.MINUTES)
     httpClient.writeTimeout(5, TimeUnit.MINUTES)
     return Retrofit.Builder()
-        .baseUrl("https://fahamupay-faas.bfast.fahamutech.com/")
+//        .baseUrl("https://fahamupay-faas.bfast.fahamutech.com/")
+        .baseUrl("https://4bd4-41-86-179-158.in.ngrok.io/")
         .client(httpClient.build())
         .addConverterFactory(GsonConverterFactory.create())
         .build()
@@ -49,7 +51,7 @@ suspend fun makeMessageSyncRequest(
     val retrofit = getRetrofit(code, secret)
     val service = retrofit.create(FahamupayService::class.java)
 //    return try{
-    return service.sendMessages(body, code).await()
+    return service.sendMessages(body).await()
 //    }catch (e: Throwable){
 //        null
 //    }

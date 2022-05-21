@@ -23,7 +23,8 @@ suspend fun readAll(context: Context): ArrayList<String> {
                 Telephony.Sms.Inbox.CONTENT_URI,
                 projection,
                 "${Telephony.TextBasedSmsColumns.ADDRESS} = ?",
-                arrayOf("TIGOPESA"),
+//                arrayOf("+255626512332"),
+                arrayOf("+255734124552"),
                 Telephony.Sms.DEFAULT_SORT_ORDER
             )
             when (cursor?.count) {
@@ -40,10 +41,13 @@ suspend fun readAll(context: Context): ArrayList<String> {
                         val addressIndex: Int = getColumnIndex(Telephony.TextBasedSmsColumns.ADDRESS)
 //                val threadIndex: Int = getColumnIndex(Telephony.TextBasedSmsColumns.THREAD_ID)
                         while (moveToNext()) {
+
+//                            return@withContext
 //                    val read = getString(readIndex)
                             val body = getString(bodyIndex)
 //                        val address = getString(addressIndex)
                             if (body.lowercase(Locale.ROOT).contains("umepokea")) {
+//                                Log.e("ADDD*****",getString(addressIndex))
 //                            Log.e("ROW SMS", "address: $address, body: $body")
                                 messages.add(body)
                             }
