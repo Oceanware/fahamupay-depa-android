@@ -8,7 +8,9 @@ import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.await
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.create
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
 import java.util.concurrent.TimeUnit
@@ -21,6 +23,9 @@ interface FahamupayService {
         @Body body: SendMessageRequest,
 //        @Path("code") code: String
     ): Call<Array<Message>>
+
+    @GET("depa/{code}/mobile/sync")
+    fun existsMessagesHashes(@Path("code") code: String): Call<Array<String>>
 }
 
 private fun getRetrofit(code: String, secret: String): Retrofit {
@@ -55,4 +60,10 @@ suspend fun makeMessageSyncRequest(
 //    }catch (e: Throwable){
 //        null
 //    }
+}
+
+suspend fun getRemoteMessagesHashes(code: String, secret: String): Array<String>{
+    val retrofit = getRetrofit(code,secret)
+    val service = retrofit.create(FahamupayService::class.java)
+    return service.existsMessagesHashes(code).await()
 }
